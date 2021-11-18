@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+    [Header("Player Detection")] 
+    public LOS enemyLOS;
+    
     [Header("Movement")] 
     public float runForce;
     public Transform lookAheadPoint;
@@ -12,12 +15,15 @@ public class EnemyController : MonoBehaviour
     public LayerMask wallLayerMask;
     public bool isGroundAhead;
 
+    [Header("Animation")] public Animator animatorContoller;
     private Rigidbody2D rigidbody;
 
     // Start is called before the first frame update
     void Start()
     {
         rigidbody = GetComponent<Rigidbody2D>();
+        enemyLOS = GetComponent<LOS>();
+        animatorContoller = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -25,7 +31,32 @@ public class EnemyController : MonoBehaviour
     {
         LookAhead();
         LookInFront();
-        MoveEnemy();
+
+        if (!HasLOS())
+        {
+            animatorContoller.enabled = true;
+            animatorContoller.Play("Run");
+            MoveEnemy();
+        }
+        else
+        {
+            animatorContoller.enabled = false;
+        }
+       
+    }
+
+    private bool HasLOS()
+    {
+        if (enemyLOS.colliderList.Count > 0)
+        {
+            if ((enemyLOS.collidesWith.gameObject.CompareTag("Player")) && 
+                (enemyLOS.colliderList[0].gameObject.CompareTag("Player")))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void LookAhead()
